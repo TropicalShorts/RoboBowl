@@ -1,3 +1,12 @@
+/*
+Originally developed by Jackson McMillen and Garrett Cline
+For use by Newton's Attic
+
+Required Libraries to dowload:
+LiquidCrystal I2C library by Marco Schwartz
+
+*/
+
 #include <LiquidCrystal_I2C.h>
 
 LiquidCrystal_I2C lcd1(0x26,20,4);  // set the LCD address to 0x26 for a 20 chars and 4 line display
