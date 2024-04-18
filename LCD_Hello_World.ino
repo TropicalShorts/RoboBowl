@@ -27,12 +27,12 @@ const int motorTarget4 = 31;
 const int motorTarget5 = 32;
 const int motorTarget6 = 33;
 
-const int sensorTarget1 = 48;
-const int sensorTarget2 = 49;
-const int sensorTarget3 = 50;
-const int sensorTarget4 = 51;
-const int sensorTarget5 = 52;
-const int sensorTarget6 = 53;
+const int sensorTarget1 = 10;
+const int sensorTarget2 = 11;
+const int sensorTarget3 = 12;
+const int sensorTarget4 = 13;
+const int sensorTarget5 = 14;
+const int sensorTarget6 = 15;
 
 const int resetTargetButton1 = 42;
 const int resetTargetButton2 = 43;
