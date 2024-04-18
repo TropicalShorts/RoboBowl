@@ -34,23 +34,23 @@ const int sensorTarget4 = 51;
 const int sensorTarget5 = 52;
 const int sensorTarget6 = 53;
 
-const int resetTarget1 = 42;
-const int resetTarget2 = 43;
-const int resetTarget3 = 44;
-const int resetTarget4 = 45;
-const int resetTarget5 = 46;
-const int resetTarget6 = 47;
+const int resetTargetButton1 = 42;
+const int resetTargetButton2 = 43;
+const int resetTargetButton3 = 44;
+const int resetTargetButton4 = 45;
+const int resetTargetButton5 = 46;
+const int resetTargetButton6 = 47;
 
-const int resetTargetAll = 41;
+const int resetTargetAllButton = 41;
 
-const int randomLock = 40; 
+const int randomLockButton = 40; 
 
-const int incrTime5 = 36;
-const int incrTime30 = 37;
-const int decrTime5 = 38;
-const int decrTime30 = 39;
+const int incrTime5Button = 36;
+const int incrTime30Button = 37;
+const int decrTime5Button = 38;
+const int decrTime30Button = 39;
 
-const int startStop = 35;
+const int startStopButton = 35;
 
 
 void setup() {
@@ -101,23 +101,23 @@ void setup() {
   pinMode(sensorTarget5, INPUT);
   pinMode(sensorTarget6, INPUT);
 
-  pinMode(resetTarget1, INPUT);
-  pinMode(resetTarget2, INPUT);
-  pinMode(resetTarget3, INPUT);
-  pinMode(resetTarget4, INPUT);
-  pinMode(resetTarget5, INPUT);
-  pinMode(resetTarget6, INPUT);
+  pinMode(resetTargetButton1, INPUT);
+  pinMode(resetTargetButton2, INPUT);
+  pinMode(resetTargetButton3, INPUT);
+  pinMode(resetTargetButton4, INPUT);
+  pinMode(resetTargetButton5, INPUT);
+  pinMode(resetTargetButton6, INPUT);
 
-  pinMode(resetTargetAll, INPUT);
+  pinMode(resetTargetAllButton, INPUT);
 
-  pinMode(randomLock, INPUT);
+  pinMode(randomLockButton, INPUT);
 
-  pinMode(incrTime5, INPUT);
-  pinMode(incrTime30, INPUT);
-  pinMode(decrTime5, INPUT);
-  pinMode(decrTime30, INPUT);
+  pinMode(incrTime5Button, INPUT);
+  pinMode(incrTime30Button, INPUT);
+  pinMode(decrTime5Button, INPUT);
+  pinMode(decrTime30Button, INPUT);
 
-  pinMode(startStop, INPUT);
+  pinMode(startStopButton, INPUT);
 }
 
 void loop() {
