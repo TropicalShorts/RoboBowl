@@ -121,4 +121,37 @@ void setup() {
 }
 
 void loop() {
+  switch(currentState) {
+    case 0:                                         // Waiting for button input to begin the game
+      if (digitalRead(startStopButton) == HIGH) {   // If button is pressed
+        currentState = 1;  
+        startTime = millis();
+      }
+      break;
+      
+    case 1:  // State 1: Wait for a minute
+      elapsedTime = millis() - startTime;           // Calculate elapsed time 
+      if(millis() % 1000 == 0){
+        Serial.println((millis()-elapsedTime)/1000);
+        delay(1);
+      } 
+      if (elapsedTime >= 60000) {                   // If 1 minute has passed
+          Serial.println("Round over!!!");
+          currentState = 2;                         // Move to state 2
+          startTime = millis();                     // Record the start time for the next state
+      }
+      
+      break;
+      
+    case 2: 
+      println("Reseting pins");
+      digitalWrite(resetTaregtAllButton, HIGH)      // Set pin high for 5 seconds
+      if (millis() - startTime >= 5000) {           // If 5 seconds have passed
+        Serial.println("Pins reset");
+        digitalWrite(
+        currentState = 0;                           // Return to state 0
+        digitalWrite(resetTaregtAllButton, LOW)     // Disengage motors
+      }
+      break;
+  }
 }
