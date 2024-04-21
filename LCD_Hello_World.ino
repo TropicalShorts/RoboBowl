@@ -52,8 +52,23 @@ const int decrTime30Button = 39;
 
 const int startStopButton = 35;
 
+unsigned long startTime = 0;
+unsigned long state3time = 0;
+unsigned long elapsedTime = 0;
+unsigned long secondTime = 0;
+
+bool paused = false;
+bool firstCheckDispalyState1 = true;
+bool firstCheckDisplaySecond = true;
+int currentState = 0;
+
+static unsigned long lastSecondPrinted = 0;  // Variable to store the last time a second was printed
+static int remainingSeconds = 10;            // Variable to store the remaining seconds
 
 void setup() {
+  Serial.begin(9600);
+  Serial.println("Check 1");
+  
   lcd1.init();
   lcd1.clear();         
   lcd1.backlight();      // Make sure backlight is on
@@ -65,20 +80,23 @@ void setup() {
   lcd3.backlight();      // Make sure backlight is on
   
   lcd1.setCursor(0,0);   //Set cursor to character 0 on line 0
-  lcd1.print("Target 1");
+  lcd1.print("Target 1: UP");
   
   lcd1.setCursor(0,1);   //Move cursor to character 0 on line 1
-  lcd1.print("Target 2");
+  lcd1.print("Target 2: UP");
   lcd1.setCursor(0,2);   //Move cursor to character 0 on line 2
-  lcd1.print("Target 3");
+  lcd1.print("Target 3: UP");
 
   lcd2.setCursor(0,0);   //Set cursor to character 0 on line 0
-  lcd2.print("Target 4");
+  lcd2.print("Target 4: UP");
   
   lcd2.setCursor(0,1);   //Move cursor to character 0 on line 1
-  lcd2.print("Target 5");
+  lcd2.print("Target 5: UP");
   lcd2.setCursor(0,2);   //Move cursor to character 0 on line 2
-  lcd2.print("Target 6");
+  lcd2.print("Target 6: UP");
+  
+
+  Serial.println("Check 2");
 
   pinMode(lockTarget1, OUTPUT);
   pinMode(lockTarget2, OUTPUT);
@@ -127,37 +145,81 @@ void loop() {
         Serial.println("In state 0");
         firstCheckDispalyState1 = false;
       }
+
+      lcd3.setCursor(0,0);
+      lcd3.print("Waiting to begin");
+
       if (digitalRead(startStopButton) == HIGH) {   // If button is pressed
         Serial.println("Start button pressed");
+        lcd3.clear();
+        lcd3.print("Begining round!");
         currentState = 1;  
         startTime = millis();
-        elapsedTime = millis() - startTime;           // Calculate elapsed time 
+        delay(5000);
       }
       break;
       
     case 1:  // State 1: Wait for a minute
-      //elapsedTime = millis() - startTime;           // Calculate elapsed time 
-      if(millis() % 1000 == 0){
-        Serial.println((millis()-elapsedTime)/1000);
-      } 
-      if (elapsedTime >= 60000) {                   // If 1 minute (60000) has passed
-          Serial.println("Round over!!!");
-          currentState = 2;                         // Move to state 2
-          startTime = millis();                     // Record the start time for the next state
-      }
-      if (digitalRead(startStopButton) == HIGH){
+      /*static unsigned long lastSecondPrinted = 0;  // Variable to store the last time a second was printed
+      static int remainingSeconds = 10;            // Variable to store the remaining seconds
+      unsigned long currentMillis = millis();
+      
+      if (currentMillis - lastSecondPrinted >= 1000) {
+        // Update the last printed time
+        lastSecondPrinted = currentMillis;
+        // Decrease the remaining seconds
+        remainingSeconds--;
+        // Print the remaining seconds
+        Serial.println(remainingSeconds);
+      }*/
+
+      lcd3.print("Game on!");
+
+      elapsedTime = millis() - startTime; 
+      
+      secondTime = elapsedTime;
+      if (secondTime >= 1000){
 
       }
-      
+
+      if (elapsedTime >= 5000) {                   // If 1 minute (60000) has passed
+          Serial.println("Round over!!!");
+
+          lcd3.clear();
+          lcd3.print("Round over!");
+
+          currentState = 2;                         // Move to state 2
+          state3time = millis();                     // Record the start time for the next state
+      }
       break;
       
     case 2: 
-      Serial.println("Reseting pins");
-      digitalWrite(resetTargetAllButton, HIGH);      // Set pin high for 5 seconds
-      if (millis() - startTime >= 5000) {           // If 5 seconds have passed
+      lcd3.setCursor(0,2);
+      lcd3.print("Reseting pins");
+
+      digitalWrite(motorTarget1, HIGH);               // Set pin high for 5 seconds
+      digitalWrite(motorTarget2, HIGH);
+      digitalWrite(motorTarget3, HIGH);
+      digitalWrite(motorTarget4, HIGH);
+      digitalWrite(motorTarget5, HIGH);
+      digitalWrite(motorTarget6, HIGH);
+
+      if (millis() - state3time >= 5000) {           // If 5 seconds have passed
         Serial.println("Pins reset");
         currentState = 0;                           // Return to state 0
-        digitalWrite(resetTargetAllButton, LOW);     // Disengage motors
+
+        lcd3.setCursor(0,2);
+        lcd3.clear();
+        lcd3.print("Pins reset");
+
+        digitalWrite(motorTarget1, LOW);            // Disengage motors
+        digitalWrite(motorTarget2, LOW);
+        digitalWrite(motorTarget3, LOW);
+        digitalWrite(motorTarget4, LOW);
+        digitalWrite(motorTarget5, LOW);
+        digitalWrite(motorTarget6, LOW);
+
+        delay(5000);
       }
       break;
   }
