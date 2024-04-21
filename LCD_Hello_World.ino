@@ -55,7 +55,11 @@ const int startStopButton = 35;
 unsigned long startTime = 0;
 unsigned long state3time = 0;
 unsigned long elapsedTime = 0;
+unsigned long elapsedTimePause = 0;
+unsigned long pauseStartTime = 0;
 unsigned long secondTime = 0;
+
+int i = 0;
 
 bool paused = false;
 bool firstCheckDispalyState1 = true;
@@ -155,45 +159,68 @@ void loop() {
         lcd3.print("Begining round!");
         currentState = 1;  
         startTime = millis();
-        delay(5000);
+        delay(1000);
+        lcd3.clear();
+        lcd3.print("Game on!");
       }
       break;
       
     case 1:  // State 1: Wait for a minute
-      /*static unsigned long lastSecondPrinted = 0;  // Variable to store the last time a second was printed
-      static int remainingSeconds = 10;            // Variable to store the remaining seconds
-      unsigned long currentMillis = millis();
-      
-      if (currentMillis - lastSecondPrinted >= 1000) {
-        // Update the last printed time
-        lastSecondPrinted = currentMillis;
-        // Decrease the remaining seconds
-        remainingSeconds--;
-        // Print the remaining seconds
-        Serial.println(remainingSeconds);
-      }*/
 
-      lcd3.print("Game on!");
+      static unsigned long previousMillis = 0;
+      static int countdown = 11;
 
-      elapsedTime = millis() - startTime; 
-      
-      secondTime = elapsedTime;
-      if (secondTime >= 1000){
+      while (countdown > 0 && !paused) {
 
+        if(digitalRead(startStopButton)==HIGH || digitalRead(incrTime5Button)==HIGH){
+        Serial.println("Pause started");
+        lcd3.setCursor(0,2);
+        lcd3.print("Paused");
+        currentState = 2;
+        pauseStartTime = millis();
+        paused = true;
+        }
+
+        unsigned long currentMillis = millis();
+        if (currentMillis - previousMillis >= 1000 && !paused) { // Check if 1 second has passed
+            previousMillis = currentMillis;
+            Serial.println(countdown-1);
+            lcd3.clear();
+            lcd3.setCursor(0,0);
+            lcd3.print("Game on!");
+            lcd3.setCursor(0,1);
+            lcd3.print(countdown - 1);
+            countdown--; // Decrement countdown
+        }
       }
 
-      if (elapsedTime >= 5000) {                   // If 1 minute (60000) has passed
+      elapsedTime = millis() - startTime; 
+
+      if (elapsedTime >= 10000 && !paused) {                   // If 1 minute (60000) has passed
           Serial.println("Round over!!!");
 
           lcd3.clear();
           lcd3.print("Round over!");
 
-          currentState = 2;                         // Move to state 2
+          currentState = 3;                         // Move to state 2
           state3time = millis();                     // Record the start time for the next state
+          countdown = 11;
       }
+
       break;
       
-    case 2: 
+    case 2:
+
+      Serial.println("Paused");
+      if(digitalRead(incrTime5Button)==HIGH){
+        paused = false;
+        currentState = 1;
+        delay(1000);
+      }
+
+      break;
+
+    case 3: 
       lcd3.setCursor(0,2);
       lcd3.print("Reseting pins");
 
