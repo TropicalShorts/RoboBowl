@@ -61,10 +61,13 @@ unsigned long pauseStartTime = 0;
 unsigned long secondTime = 0;
 
 int i = 0;
+int team1Score = 0;
+int team2Score = 0;
 
 bool paused = false;
 bool firstCheckDispalyState1 = true;
 bool firstCheckDisplaySecond = true;
+bool needToResetTime = false;
 int currentState = 0;
 
 static unsigned long lastSecondPrinted = 0;  // Variable to store the last time a second was printed
@@ -209,7 +212,12 @@ void loop() {
     case 1:  // State 1: Wait for a minute
 
       static unsigned long previousMillis = 0;
-      static int countdown = 11;
+      static int countdown = 31;
+
+      if(needToResetTime){
+        countdown = 31;
+        needToResetTime = false;
+      }
 
       while (countdown > 0 && !paused) {
 
@@ -247,6 +255,22 @@ void loop() {
           lcd2.print("Target 6: DOWN");
         }
 
+        if(pinState1 == false && pinState2 == false && pinState3 == false){
+          currentState = 3;
+          state3time = millis();
+          countdown = 0;
+          needToResetTime = true;
+          Serial.println("Team 1 wins!");
+          lcd3.clear();
+          lcd3.print("Round over!");
+          lcd3.setCursor(0,1);
+          lcd3.print("Team 1 wins!!!");
+          team1Score++;
+          lcd3.setCursor(0,2);
+          lcd3.print(team1Score);
+          delay(5000);
+        }
+
         unsigned long currentMillis = millis();
         if (currentMillis - previousMillis >= 1000 && !paused) { // Check if 1 second has passed
             previousMillis = currentMillis;
@@ -262,7 +286,7 @@ void loop() {
 
       elapsedTime = millis() - startTime; 
 
-      if (elapsedTime >= 10000 && !paused) {                   // If 1 minute (60000) has passed
+      if (elapsedTime >= 30000 && !paused) {                   // If 1 minute (60000) has passed
           Serial.println("Round over!!!");
 
           lcd3.clear();
@@ -270,7 +294,7 @@ void loop() {
 
           currentState = 3;                         // Move to state 2
           state3time = millis();                     // Record the start time for the next state
-          countdown = 11;
+          countdown = 31;
       }
 
       break;
@@ -297,7 +321,7 @@ void loop() {
       digitalWrite(motorTarget5, HIGH);
       digitalWrite(motorTarget6, HIGH);
 
-      if (millis() - state3time >= 5000) {           // If 5 seconds have passed
+      if (millis() - state3time >= 10000) {           // If 5 seconds have passed
         Serial.println("Pins reset");
         currentState = 0;                           // Return to state 0
 
