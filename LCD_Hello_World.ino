@@ -8,6 +8,7 @@ LiquidCrystal I2C library by Marco Schwartz
 */
 
 #include <LiquidCrystal_I2C.h>
+#include <YetAnotherPcInt.h>
 
 LiquidCrystal_I2C lcd1(0x26,20,4);  // set the LCD address to 0x26 for a 20 chars and 4 line display
 LiquidCrystal_I2C lcd2(0x27,20,4);  // set the LCD address to 0x26 for a 20 chars and 4 line display
@@ -69,6 +70,38 @@ int currentState = 0;
 static unsigned long lastSecondPrinted = 0;  // Variable to store the last time a second was printed
 static int remainingSeconds = 10;            // Variable to store the remaining seconds
 
+bool pinState1 = true;
+bool pinState2 = true;
+bool pinState3 = true;
+bool pinState4 = true;
+bool pinState5 = true;
+bool pinState6 = true;
+
+void pinChange1(){
+  Serial.println("Pin 1 knocked down");
+  pinState1 = !pinState1;
+}
+void pinChange2(){
+  Serial.println("Pin 2 knocked down");
+  pinState2 = !pinState2;
+}
+void pinChange3(){
+  Serial.println("Pin 3 knocked down");
+  pinState3 = !pinState3;
+}
+void pinChange4(){
+  Serial.println("Pin 4 knocked down");
+  pinState4 = !pinState4;
+}
+void pinChange5(){
+  Serial.println("Pin 5 knocked down");
+  pinState5 = !pinState5;
+}
+void pinChange6(){
+  Serial.println("Pin 6 knocked down");
+  pinState6 = !pinState6;
+}
+
 void setup() {
   Serial.begin(9600);
   Serial.println("Check 1");
@@ -122,6 +155,14 @@ void setup() {
   pinMode(sensorTarget4, INPUT);
   pinMode(sensorTarget5, INPUT);
   pinMode(sensorTarget6, INPUT);
+
+  //PCMSK0 |= (1 << PCINT4);//pin 10 - B4 - Rx Channel 5
+  PcInt::attachInterrupt(sensorTarget1, pinChange1, CHANGE);
+  PcInt::attachInterrupt(sensorTarget2, pinChange2, CHANGE);
+  PcInt::attachInterrupt(sensorTarget3, pinChange3, CHANGE);
+  PcInt::attachInterrupt(sensorTarget4, pinChange4, CHANGE);
+  PcInt::attachInterrupt(sensorTarget5, pinChange5, CHANGE);
+  PcInt::attachInterrupt(sensorTarget6, pinChange6, CHANGE);
 
   pinMode(resetTargetButton1, INPUT);
   pinMode(resetTargetButton2, INPUT);
@@ -181,6 +222,31 @@ void loop() {
         paused = true;
         }
 
+        if(pinState1 == false){
+          lcd1.setCursor(0,0);
+          lcd1.print("Target 1: DOWN");
+        }
+        if(pinState2 == false){
+          lcd1.setCursor(0,1);
+          lcd1.print("Target 2: DOWN");
+        }
+        if(pinState3 == false){
+          lcd1.setCursor(0,2);
+          lcd1.print("Target 3: DOWN");
+        }
+        if(pinState4 == false){
+          lcd2.setCursor(0,0);
+          lcd2.print("Target 4: DOWN");
+        }
+        if(pinState5 == false){
+          lcd2.setCursor(0,1);
+          lcd2.print("Target 5: DOWN");
+        }
+        if(pinState6 == false){
+          lcd2.setCursor(0,2);
+          lcd2.print("Target 6: DOWN");
+        }
+
         unsigned long currentMillis = millis();
         if (currentMillis - previousMillis >= 1000 && !paused) { // Check if 1 second has passed
             previousMillis = currentMillis;
@@ -238,6 +304,21 @@ void loop() {
         lcd3.setCursor(0,2);
         lcd3.clear();
         lcd3.print("Pins reset");
+
+        lcd1.clear();
+        lcd2.clear();
+        lcd1.setCursor(0,0);   //Set cursor to character 0 on line 0
+        lcd1.print("Target 1: UP");
+        lcd1.setCursor(0,1);   //Move cursor to character 0 on line 1
+        lcd1.print("Target 2: UP");
+        lcd1.setCursor(0,2);   //Move cursor to character 0 on line 2
+        lcd1.print("Target 3: UP");
+        lcd2.setCursor(0,0);   //Set cursor to character 0 on line 0
+        lcd2.print("Target 4: UP");
+        lcd2.setCursor(0,1);   //Move cursor to character 0 on line 1
+        lcd2.print("Target 5: UP");
+        lcd2.setCursor(0,2);   //Move cursor to character 0 on line 2
+        lcd2.print("Target 6: UP");
 
         digitalWrite(motorTarget1, LOW);            // Disengage motors
         digitalWrite(motorTarget2, LOW);
