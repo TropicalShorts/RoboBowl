@@ -1,0 +1,24 @@
+// Set PWM output pin
+int pwmPin = 9;  // Any PWM-capable pin (e.g., 9, 10)
+
+void setup() {
+  // No need to set anything in setup for PWM, just call analogWrite later
+}
+
+void loop() {
+  // Option 1: Send 25% duty cycle
+  analogWrite(pwmPin, 64);  // 64/255 ≈ 25% duty cycle
+  delay(1000);
+
+  // Option 2: Send 50% duty cycle
+  analogWrite(pwmPin, 128); // 128/255 ≈ 50% duty cycle
+  delay(1000);
+
+  // Option 3: Send 75% duty cycle
+  analogWrite(pwmPin, 192); // 192/255 ≈ 75% duty cycle
+  delay(1000);
+
+  // Option 4: Send 100% duty cycle
+  analogWrite(pwmPin, 255); // 100% duty cycle
+  delay(1000);
+}
