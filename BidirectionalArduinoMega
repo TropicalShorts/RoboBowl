@@ -1,0 +1,26 @@
+void setup() {
+  // Begin Serial communication at 9600 baud rate
+  Serial.begin(9600);
+}
+
+void loop() {
+  // Check if data is available from the Uno
+  if (Serial.available()) {
+    String receivedMessage = Serial.readStringUntil('\n');  // Read until newline
+    Serial.println("Mega received: " + receivedMessage);    // Acknowledge receipt
+    
+    // Respond based on the message received
+    if (receivedMessage == "ping") {
+      Serial.println("pong from Mega");
+    }
+  }
+
+  // Allow input from Serial Monitor to send to the Uno
+  if (Serial.availableForWrite()) {
+    if (Serial.readString() == "send") {
+      Serial.println("Hello from Mega to Uno!");  // Send message to Uno
+    }
+  }
+
+  delay(100);  // Short delay for stability
+}
