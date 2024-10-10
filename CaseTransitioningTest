@@ -1,0 +1,43 @@
+// State variable
+int state = 0;
+unsigned long previousMillis = 0; // To track time
+const unsigned long interval = 4000; // 5 seconds in milliseconds
+unsigned long triggerTime;
+bool firstCheck = true;
+
+void setup() {
+  // Initialize serial communication at 9600 bits per second
+  Serial.begin(9600);
+}
+
+void loop() {
+  // Get the current time
+  unsigned long currentMillis = millis();
+  
+  switch (state) {
+    case 0:
+      Serial.println("State 0: Waiting for 5 seconds...");
+      // Check if 5 seconds have passed
+      if (currentMillis - previousMillis >= interval) {
+        previousMillis = currentMillis; // Reset timer
+        state = 1; // Transition to state 1
+      }
+      break;
+      
+    case 1:
+      if(firstCheck){
+        Serial.println("State 1: 5 seconds have passed.");
+        triggerTime = millis();
+        Serial.println("Sensor triggered at:");
+        Serial.println(triggerTime);
+        firstCheck = false;
+      }
+      
+      // Here, you can add other actions for state 1 if needed.
+      break;
+
+    default:
+      Serial.println("Unknown state.");
+      break;
+  }
+}
