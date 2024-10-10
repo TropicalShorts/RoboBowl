@@ -1,0 +1,27 @@
+// Pin where the PWM signal is connected
+int pwmInputPin = A0;
+
+void setup() {
+  Serial.begin(9600);  // Start serial communication for debugging
+}
+
+void loop() {
+  // Read the analog value from the PWM pin (0-1023)
+  int pwmValue = analogRead(pwmInputPin);
+
+  // Map the analog value (0-1023) to PWM (0-255)
+  int pwmMapped = map(pwmValue, 0, 1023, 0, 255);
+
+  // Determine which duty cycle is being received
+  if (pwmMapped < 85) {  // Roughly 25% duty cycle
+    Serial.println("Option 1: 25% duty cycle received");
+  } else if (pwmMapped < 170) {  // Roughly 50% duty cycle
+    Serial.println("Option 2: 50% duty cycle received");
+  } else if (pwmMapped < 230) {  // Roughly 75% duty cycle
+    Serial.println("Option 3: 75% duty cycle received");
+  } else {  // Close to 100% duty cycle
+    Serial.println("Option 4: 100% duty cycle received");
+  }
+
+  delay(500);  // Short delay to stabilize the readings
+}
