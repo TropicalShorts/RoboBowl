@@ -1,0 +1,75 @@
+#include <Adafruit_NeoPixel.h>
+
+// How many internal neopixels do we have? some boards have more than one!
+#define NUMPIXELS        1
+
+Adafruit_NeoPixel pixels(NUMPIXELS, PIN_NEOPIXEL, NEO_GRB + NEO_KHZ800);
+
+/* 
+Serial2 is on pins 19 (Rx) and 18 (Tx).
+Serial3 is on pins 17 (Rx) and 16 (Tx).
+ */
+
+
+
+// the setup routine runs once when you press reset:
+void setup() {
+  Serial.begin(9600);
+  Serial2.begin(9600);
+  delay(2000);
+  Serial.println("send");
+  Serial2.println("send");
+  
+#if defined(NEOPIXEL_POWER)
+  // If this board has a power control pin, we must set it to output and high
+  // in order to enable the NeoPixels. We put this in an #if defined so it can
+  // be reused for other boards without compilation errors
+  pinMode(NEOPIXEL_POWER, OUTPUT);
+  digitalWrite(NEOPIXEL_POWER, HIGH);
+#endif
+
+  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
+  pixels.setBrightness(20); // not so bright
+}
+
+
+void loop() {
+  // Check if data is available from the Uno
+    Serial.println("send");
+    String receivedMessage = Serial.readStringUntil('\n');  // Read until newline
+    Serial.println("M4 received: " + receivedMessage);    // Acknowledge receipt
+    
+    // Respond based on the message received
+    if (receivedMessage == "ping") {
+      Serial.println("pong from M4");
+      pixels.fill(0x00FF00);
+      pixels.show();
+      delay(500); // wait half a second
+
+      // turn off
+      pixels.fill(0x000000);
+      pixels.show();
+      delay(500); 
+  }
+  Serial2.println("send");
+    String receivedMessage2 = Serial2.readStringUntil('\n');  // Read until newline
+    Serial2.println("M4 received: " + receivedMessage2);    // Acknowledge receipt
+    
+    // Respond based on the message received
+    if (receivedMessage2 == "ping") {
+      Serial2.println("pong from M4");
+      pixels.fill(0x00FF00);
+      pixels.show();
+      delay(500); // wait half a second
+
+      // turn off
+      pixels.fill(0x000000);
+      pixels.show();
+      delay(500); 
+  }
+
+  // Allow input from Serial Monitor to send to the Uno
+  
+      
+  
+ }
