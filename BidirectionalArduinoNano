@@ -1,27 +1,22 @@
-#include <SoftwareSerial.h>
-
-// RX, TX pins (adjust according to your wiring)
-SoftwareSerial mySerial(10, 11);  // RX, TX
-
 void setup() {
-  mySerial.begin(9600);
+  Serial.begin(9600);
   Serial.begin(9600);
 }
 
 void loop() {
-  if (mySerial.available()) {
-    String receivedMessage = mySerial.readStringUntil('\n');
+  if (Serial.available()) {
+    String receivedMessage = Serial.readStringUntil('\n');
     Serial.println("Nano received: " + receivedMessage);
     
     if (receivedMessage == "pong from Mega") {
-      mySerial.println("ping");
+      Serial.println("ping");
     }
   }
 
   if (Serial.available()) {
     String command = Serial.readStringUntil('\n');
     if (command == "send") {
-      mySerial.println("Hello from Nano to Mega!");
+      Serial.println("Hello from Nano to Mega!");
     }
   }
 
