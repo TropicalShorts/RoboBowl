@@ -319,8 +319,13 @@ extern SERCOM sercom6;
 extern SERCOM sercom7;
 
 extern Uart Serial1;
+
+// New code begins here
+
 extern Uart Serial2;
 extern Uart Serial3;
+
+// End new code
 
 #endif
 
