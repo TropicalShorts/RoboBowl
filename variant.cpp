@@ -218,6 +218,9 @@ void SERCOM0_3_Handler()
   Serial1.IrqHandler();
 }
 
+
+// New Code begins here
+
 Uart Serial2( &SERCOM_SERIAL2, PIN_SERIAL2_RX, PIN_SERIAL2_TX, PAD_SERIAL2_RX, PAD_SERIAL2_TX ) ;
 
 void SERCOM4_0_Handler()
