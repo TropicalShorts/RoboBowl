@@ -1,0 +1,24 @@
+String receivedMessage;
+unsigned long int receivedNumber;
+
+void setup() {
+  Serial.begin(9600);  // Start serial communication at 9600 baud
+  pinMode(LED_BUILTIN, OUTPUT);
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    // Read the incoming message
+    //receivedMessage = Serial.readStringUntil('\n');
+    //receivedMessage = Serial.readStringUntil('Q');
+    receivedNumber = Serial.parseInt();
+    if (receivedNumber < 10){
+      digitalWrite(LED_BUILTIN, LOW);
+    } else if (receivedNumber >= 10) {
+        digitalWrite(LED_BUILTIN, HIGH);
+    }
+    // Print the message received from Mega
+    //Serial.println("Message received: " + receivedMessage);
+    Serial.println(receivedNumber);
+  }
+}
