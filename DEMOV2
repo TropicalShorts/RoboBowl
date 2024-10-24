@@ -47,10 +47,21 @@ const int resetTargetAllButton = 41;
 
 const int randomLockButton = 40; 
 
-const int incrTime5Button = 36;
-const int incrTime30Button = 37;
+const int resume = 36;
+
+const int incrTime5Button = 37;
+int buttonStateIT5 = LOW;
+int lastButtonStateIT5 = LOW;
+unsigned long lastDebounceTimeIT5 = 0; // To track the time since the last button press
+unsigned long debounceDelayIT5 = 50;   // Debounce delay in milliseconds
+
 const int decrTime5Button = 38;
-const int decrTime30Button = 39;
+int buttonStateDT5 = LOW;
+int lastButtonStateDT5 = LOW;
+unsigned long lastDebounceTimeDT5 = 0; // To track the time since the last button press
+unsigned long debounceDelayDT5 = 50;   // Debounce delay in milliseconds
+
+const int instantRoundOver = 39;
 
 const int startStopButton = 35;
 
@@ -66,6 +77,8 @@ int team2Score = 0;
 bool paused = false;                        //Bool for is we are paused
 bool firstCheckDispalyState1 = true;        //Used for debugging     
 bool needToResetTime = false;               //Needed for when a round ends by way of target elimination
+bool first_5_time_increase = false;
+
 int currentState = 0;                       //Initial state for finite state machine
 
 bool pinState1 = true;                      //Bool for the state of pin 1
@@ -111,6 +124,50 @@ void team1wins(){
 }
 
 void team2wins(){
+
+}
+
+void increaseTimeBy5(int &countdown){
+  
+  int reading = digitalRead(incrTime5Button);
+  // If the button state has changed
+  if (reading != lastButtonStateIT5) {
+    lastDebounceTimeIT5 = millis();  // Reset the debounce timer
+  }
+  // Only trigger the action if the button has been in the same state for the debounce period
+  if ((millis() - lastDebounceTimeIT5) > debounceDelayIT5) {
+    // If the current reading is HIGH and it was previously LOW, the button was pressed
+    if (reading == HIGH && buttonStateIT5 == LOW) {
+      countdown = countdown + 5;
+      Serial.println("Added 5 seconds");
+    }
+    buttonStateIT5 = reading; // Update the current button state
+  }
+  lastButtonStateIT5 = reading;
+}
+
+void decreaseTimeBy5(int &countdown){
+    
+  int reading = digitalRead(decrTime5Button);
+  // If the button state has changed
+  if (reading != lastButtonStateDT5) {
+    lastDebounceTimeDT5 = millis();  // Reset the debounce timer
+  }
+  // Only trigger the action if the button has been in the same state for the debounce period
+  if ((millis() - lastDebounceTimeDT5) > debounceDelayDT5) {
+    // If the current reading is HIGH and it was previously LOW, the button was pressed
+    if (reading == HIGH && buttonStateDT5 == LOW) {
+      if (countdown > 6){
+        countdown = countdown - 5;
+        Serial.println("Removed 5 seconds");
+      }
+    }
+    buttonStateDT5 = reading; // Update the current button state
+  }
+  lastButtonStateDT5 = reading;
+}
+
+void roundInstantOver(){
 
 }
 
@@ -225,10 +282,10 @@ void setup() {
 
   pinMode(randomLockButton, INPUT);
 
+  pinMode(resume, INPUT);
   pinMode(incrTime5Button, INPUT);
-  pinMode(incrTime30Button, INPUT);
   pinMode(decrTime5Button, INPUT);
-  pinMode(decrTime30Button, INPUT);
+  pinMode(instantRoundOver, INPUT);
 
   pinMode(startStopButton, INPUT);
 }
@@ -256,19 +313,24 @@ void loop() {
       
     case 1:  // State 1: Wait for a minute
       static unsigned long previousMillis = 0;    //Used for second countdown
-      static int countdown = 31;
+      static int countdown = 11;
       if(needToResetTime){
-        countdown = 31;
+        countdown = 11;
         needToResetTime = false;
       }
       while (countdown > 0 && !paused) {
-        if(digitalRead(startStopButton)==HIGH || digitalRead(incrTime5Button)==HIGH){
+        if(digitalRead(startStopButton)==HIGH || digitalRead(resume)==HIGH){
           Serial.println("Pause started");
           lcd3.setCursor(0,2);
           lcd3.print("Paused");
           currentState = 2;
           paused = true;
         }
+
+        increaseTimeBy5(countdown);
+
+        decreaseTimeBy5(countdown);
+
         if(pinState1 == false){
           lcd1.setCursor(0,0);
           lcd1.print("Target 1: DOWN");
@@ -337,19 +399,19 @@ void loop() {
         }
       }
       elapsedTime = millis() - startTime; 
-      if (elapsedTime >= 30000 && !paused) {                   // If 30 seconds (30000) have passed
+      if (elapsedTime >= 10000 && !paused) {                   // If 30 seconds (30000) have passed
           Serial.println("Round over!!!");
           lcd3.clear();
           lcd3.print("Round over!");
           currentState = 3;                         // Move to state 2
           state3time = millis();                     // Record the start time for the next state
-          countdown = 31;
+          countdown = 11;
       }
       break;
       
     case 2:
       Serial.println("Paused");
-      if(digitalRead(incrTime5Button)==HIGH){
+      if(digitalRead(resume)==HIGH){
         paused = false;
         currentState = 1;
         delay(1000);
