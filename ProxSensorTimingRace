@@ -1,0 +1,157 @@
+// Test Code for proximity sensor circuit that operates an LED
+#include <YetAnotherPcInt.h>
+
+// Define pins
+const int proximitySensorPin1 = 2;           // Digital input pin connected to the first proximity sensor
+const int ledPin1 = 13;                      // Pin connected to the first LED
+const int proximitySensorPin2 = 4;
+const int ledPin2 = 12;
+
+// Variables for debounce logic
+unsigned long lastDebounceTime1 = 0;
+unsigned long lastDebounceTime2 = 0;
+unsigned long debounceDelay = 1000000;         // 1 second debounce time for microseconds
+int lastSensorState1 = LOW;
+int lastSensorState2 = LOW;
+
+bool pinState1 = true;                      //Bool for the state of pin 1
+bool pinState2 = true;                      //Bool for the state of pin 2
+
+bool pin1DownFirst = true;
+bool pin2DownFirst = false;
+
+void pinChange1(){
+  Serial.println("Pin 1 knocked down");
+  pinState1 = !pinState1;
+}
+void pinChange2(){
+  Serial.println("Pin 2 knocked down");
+  pinState2 = !pinState2;
+}
+
+int currentState = 0;
+
+unsigned long previousMillisCountdown = 0;
+unsigned long previousMillis = 0; // To track time
+unsigned long state1BeginingTime = 0;
+const unsigned long interval = 5000; // 5 seconds in milliseconds
+int countdown = 4;
+
+unsigned long startTime = 0;
+unsigned long elapsedTime = 0;
+
+void setup() {
+  // Start the serial monitor (optional)
+  Serial.begin(9600);
+  // Initialize the proximity sensor pin as an input
+  pinMode(proximitySensorPin1, INPUT);
+  pinMode(proximitySensorPin2, INPUT);
+
+  PcInt::attachInterrupt(proximitySensorPin1, pinChange1, CHANGE);
+  PcInt::attachInterrupt(proximitySensorPin2, pinChange2, CHANGE);
+  
+  // Initialize the LED pins as outputs
+  pinMode(ledPin1, OUTPUT);
+  pinMode(ledPin2, OUTPUT);
+}
+
+void loop() {
+
+  unsigned long currentMillis = millis();
+  
+  switch(currentState) {
+    case 0:
+      if (currentMillis - previousMillisCountdown >= 1000) {
+        previousMillisCountdown = currentMillis;
+        Serial.println(countdown-1);
+        Serial.println(currentState);
+        countdown--;
+      }
+
+      if (currentMillis - previousMillis >= interval){
+        Serial.println("Countdown over");
+        currentState = 1;
+        state1BeginingTime = micros();
+        countdown = 4;
+      }
+    break;
+
+    case 1:
+      
+      // Get the current time
+      unsigned long currentTime = micros();
+      Serial.println(currentState);
+
+      // Read the value from the first proximity sensor
+      int sensorValue1 = digitalRead(proximitySensorPin1);
+
+      // Check if the sensor state has changed and debounce
+      if (sensorValue1 != lastSensorState1) {
+        // Reset the debounce timer
+        lastDebounceTime1 = currentTime;
+      }
+
+      if (pin1DownFirst == true){
+        Serial.println("Pin 1 knocked down in state 1");
+        Serial.println(currentState);
+        currentState = 2;
+      }
+      
+      // Only update the LED if 1 second has passed since the last change
+      if ((currentTime - lastDebounceTime1) > debounceDelay) {
+        if (pinState1 == false) { //sensorValue == HIGH
+          digitalWrite(ledPin1, HIGH);
+          Serial.println("Sensor 1 triggered, LED ON");
+          Serial.println((lastDebounceTime1 - state1BeginingTime)/1000000);
+          pin1DownFirst = true;
+        } else {
+          digitalWrite(ledPin1, LOW);
+          //Serial.println("Sensor 1 not triggered, LED OFF");
+        }
+      }
+    
+
+      // Save the current sensor state for the next loop iteration
+      lastSensorState1 = sensorValue1;
+
+      // Repeat the debounce process for the second sensor
+      int sensorValue2 = digitalRead(proximitySensorPin2);
+      
+      if (sensorValue2 != lastSensorState2) {
+        lastDebounceTime2 = currentTime;
+      }
+
+      if ((currentTime - lastDebounceTime2) > debounceDelay) {
+        if (pinState2 == false) {
+          digitalWrite(ledPin2, HIGH);
+          Serial.println("Sensor 2 triggered, LED ON");
+          Serial.println((lastDebounceTime2 - state1BeginingTime)/1000000);
+          pin2DownFirst = true;
+        } else {
+          digitalWrite(ledPin2, LOW);
+          //Serial.println("Sensor 2 not triggered, LED OFF");
+        }
+      }
+
+      // Save the second sensor state for the next loop iteration
+      lastSensorState2 = sensorValue2;
+      
+    break;
+
+    case 2:
+      Serial.println(currentState);
+      if(pin1DownFirst){
+        Serial.println("Pin 1 was down first");
+      }
+      if(pin2DownFirst){
+        Serial.println("Pin 2 was down first");
+      }
+      delay(5000);
+      pin1DownFirst = false;
+      pin2DownFirst = false;
+
+      currentState = 0;
+
+    break;
+  }
+}
