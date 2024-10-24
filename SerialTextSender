@@ -1,0 +1,23 @@
+unsigned long previousMillis = 0;
+const long interval = 1000; // 1 second interval
+unsigned long count = 0;
+
+void setup() {
+  Serial.begin(9600);
+  Serial1.begin(9600);  // Start serial communication at 9600 baud
+}
+
+void loop() {
+  unsigned long currentMillis = millis();
+
+  // Check if the interval has passed
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+    count++;
+
+    // Send message to Nano
+    //Serial.print("Hello from Mega! Count: ");
+    Serial.println(count);
+    Serial1.println(count);
+  }
+}
