@@ -1,27 +1,28 @@
-// Pin where the PWM signal is connected
-int pwmInputPin = A0;
+// Arduino Nano: Receives PWM signal and interprets 4 distinctions
+
+int pwmInputPin = A0;  // Analog pin to read PWM signal
+int pwmValue;
+int threshold1 = 85;   // Roughly corresponds to 25% duty cycle
+int threshold2 = 170;  // Roughly corresponds to 50% duty cycle
+int threshold3 = 255;  // Roughly corresponds to 75% duty cycle
 
 void setup() {
-  Serial.begin(9600);  // Start serial communication for debugging
+  Serial.begin(9600);  // For debugging
 }
 
 void loop() {
-  // Read the analog value from the PWM pin (0-1023)
-  int pwmValue = analogRead(pwmInputPin);
-
-  // Map the analog value (0-1023) to PWM (0-255)
-  int pwmMapped = map(pwmValue, 0, 1023, 0, 255);
-
-  // Determine which duty cycle is being received
-  if (pwmMapped < 85) {  // Roughly 25% duty cycle
-    Serial.println("Option 1: 25% duty cycle received");
-  } else if (pwmMapped < 170) {  // Roughly 50% duty cycle
-    Serial.println("Option 2: 50% duty cycle received");
-  } else if (pwmMapped < 230) {  // Roughly 75% duty cycle
-    Serial.println("Option 3: 75% duty cycle received");
-  } else {  // Close to 100% duty cycle
-    Serial.println("Option 4: 100% duty cycle received");
+  pwmValue = analogRead(pwmInputPin);  // Read the PWM signal
+  
+  // Interpret the received PWM signal
+  if (pwmValue < threshold1) {
+    Serial.println("Received 25% duty cycle signal");
+  } else if (pwmValue < threshold2) {
+    Serial.println("Received 50% duty cycle signal");
+  } else if (pwmValue < threshold3) {
+    Serial.println("Received 75% duty cycle signal");
+  } else {
+    Serial.println("Received 100% duty cycle signal");
   }
 
-  delay(500);  // Short delay to stabilize the readings
+  delay(500);  // Add a small delay to avoid spamming Serial
 }
