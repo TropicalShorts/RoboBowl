@@ -1,24 +1,44 @@
-// Set PWM output pin
-int pwmPin = 9;  // Any PWM-capable pin (e.g., 9, 10)
+// Arduino Mega: Sends PWM signal with 4 distinct duty cycles
+
+int pwmPin = 9;  // PWM pin
+int signalState = 0;  // State to switch between 4 PWM distinctions
+unsigned long previousMillis = 0;
+const long interval = 2000;  // Change PWM every 2 seconds
 
 void setup() {
-  // No need to set anything in setup for PWM, just call analogWrite later
+  pinMode(pwmPin, OUTPUT);
+  Serial.begin(9600);
+  Serial.println("Check A");
 }
 
 void loop() {
-  // Option 1: Send 25% duty cycle
-  analogWrite(pwmPin, 64);  // 64/255 ≈ 25% duty cycle
-  delay(1000);
+  unsigned long currentMillis = millis();
+  //Serial.println("Check B");
+  // Change PWM signal every interval
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+    
+    // Cycle through the 4 distinct PWM signals
+    switch (signalState) {
+      case 0:
+        analogWrite(pwmPin, 64);  // 25% duty cycle
+        Serial.println("25 percent");
+        break;
+      case 1:
+        analogWrite(pwmPin, 128);  // 50% duty cycle
+          Serial.println("50 percent");
+        break;
+      case 2:
+        analogWrite(pwmPin, 192);  // 75% duty cycle
+        Serial.println("75 percent");
+        break;
+      case 3:
+        analogWrite(pwmPin, 255);  // 100% duty cycle
+        Serial.println("100 percent");
+        break;
+    }
 
-  // Option 2: Send 50% duty cycle
-  analogWrite(pwmPin, 128); // 128/255 ≈ 50% duty cycle
-  delay(1000);
-
-  // Option 3: Send 75% duty cycle
-  analogWrite(pwmPin, 192); // 192/255 ≈ 75% duty cycle
-  delay(1000);
-
-  // Option 4: Send 100% duty cycle
-  analogWrite(pwmPin, 255); // 100% duty cycle
-  delay(1000);
+    // Update the signalState to the next distinction
+    signalState = (signalState + 1) % 4;
+  }
 }
