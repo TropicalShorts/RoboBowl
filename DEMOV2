@@ -171,13 +171,50 @@ void roundInstantOver(){
 
 }
 
-void engage_motors(){
-  digitalWrite(motorTarget1, HIGH);
+void engage_motors(bool pinState1){
+
+  string pin1_State;
+  string pin2_State;
+  string pin3_State;
+  string pin4_State;
+  string pin5_State;
+  string pin6_State;
+
+/*  if (Serial.avaialble() > 0) {
+    pin1_State = Serial.readStringUntil('\n');
+    if(pinState1 == false){
+      digitalWrite(motorTarget1, HIGH);
+      delay(3000);
+      digitalWrite(motorTarget1, LOW);
+    }
+  }*/
+
+  if(pinState1 == false){
+    digitalWrite(motorTarget1, HIGH);
+    delay(3000);
+    digitalWrite(motorTarget1, LOW);
+  }
+
   digitalWrite(motorTarget2, HIGH);
+  delay(3000);
+  digitalWrite(motorTarget2, LOW);
+
   digitalWrite(motorTarget3, HIGH);
+  delay(3000);
+  digitalWrite(motorTarget3, LOW);
+
   digitalWrite(motorTarget4, HIGH);
+  delay(3000);
+  digitalWrite(motorTarget4, LOW);
+
   digitalWrite(motorTarget5, HIGH);
+  delay(3000);
+  digitalWrite(motorTarget5, LOW);
+
   digitalWrite(motorTarget6, HIGH);
+  delay(3000);
+  digitalWrite(motorTarget6, LOW);
+
 }
 
 void disengage_motors(){
@@ -334,26 +371,32 @@ void loop() {
         if(pinState1 == false){
           lcd1.setCursor(0,0);
           lcd1.print("Target 1: DOWN");
+          team1score++;
         }
         if(pinState2 == false){
           lcd1.setCursor(0,1);
           lcd1.print("Target 2: DOWN");
+          team1score++;
         }
         if(pinState3 == false){
           lcd1.setCursor(0,2);
           lcd1.print("Target 3: DOWN");
+          team1score++;
         }
         if(pinState4 == false){
           lcd2.setCursor(0,0);
           lcd2.print("Target 4: DOWN");
+          team2score++;
         }
         if(pinState5 == false){
           lcd2.setCursor(0,1);
           lcd2.print("Target 5: DOWN");
+          team2score++;
         }
         if(pinState6 == false){
           lcd2.setCursor(0,2);
           lcd2.print("Target 6: DOWN");
+          team2score++;
         }
         if(pinState1 == false && pinState2 == false && pinState3 == false){
           currentState = 3;
@@ -422,9 +465,13 @@ void loop() {
       lcd3.setCursor(0,2);
       lcd3.print("Reseting pins");
       //Engage relays to turn on motors
-      engage_motors();
+      engage_motors(pinState1);
 
-      if (millis() - state3time >= 10000) {         // If 5 seconds have passed
+      reset_displays();
+      delay(5000);
+      currentState = 0;
+
+      /*if (millis() - state3time >= 10000) {         // If 5 seconds have passed
         Serial.println("Pins reset");
         currentState = 0;                           // Return to state 0
         
@@ -435,7 +482,7 @@ void loop() {
         disengage_motors();
 
         delay(5000);
-      }
+      }*/
       break;
   }
 }
