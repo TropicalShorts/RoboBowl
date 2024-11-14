@@ -259,3 +259,23 @@ void SERCOM1_3_Handler()
 {
   Serial3.IrqHandler();
 }
+
+
+Uart Serial4( &SERCOM_SERIAL4, PIN_SERIAL4_RX, PIN_SERIAL4_TX, PAD_SERIAL4_RX, PAD_SERIAL4_TX ) ;
+
+void SERCOM5_0_Handler()
+{
+  Serial4.IrqHandler();
+}
+void SERCOM5_1_Handler()
+{
+  Serial4.IrqHandler();
+}
+void SERCOM5_2_Handler()
+{
+  Serial4.IrqHandler();
+}
+void SERCOM5_3_Handler()
+{
+  Serial4.IrqHandler();
+}
