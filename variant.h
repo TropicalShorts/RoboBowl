@@ -324,7 +324,7 @@ extern Uart Serial1;
 
 extern Uart Serial2;
 extern Uart Serial3;
-
+extern Uart Serial4;
 // End new code
 
 #endif
