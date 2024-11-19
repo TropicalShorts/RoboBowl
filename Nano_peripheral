@@ -1,0 +1,56 @@
+/*
+Code for Arduino Nano to communicate with Arduino Mega
+*/
+
+const int proximitySensorPin = 2; // Proximity sensor connected to pin 2
+const int relayPin = 3;           // Relay control pin
+
+int currentState = 0;             // Initial state
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(proximitySensorPin, INPUT_PULLUP); // Assuming the sensor outputs LOW when triggered
+  pinMode(relayPin, OUTPUT);
+}
+
+void loop() {
+  readMegaMessages();
+  if (currentState == 1) {
+    checkProximitySensor();
+  }
+}
+
+// Function to read messages from the Mega
+void readMegaMessages() {
+  if (Serial.available()) {
+    String message = Serial.readStringUntil('\n');
+    message.trim();
+    if (message.startsWith("STATE")) {
+      // Parse the state number
+      int state = message.substring(6).toInt();
+      // Handle the new state
+      currentState = state;
+    } else if (message == "ENGAGE_MOTOR") {
+      // Engage the motor
+      digitalWrite(relayPin, HIGH);
+      delay(3000);
+      digitalWrite(relayPin, LOW);
+    }
+  }
+}
+
+// Function to check the proximity sensor
+void checkProximitySensor() {
+  static bool sensorTriggered = false;
+  int sensorValue = digitalRead(proximitySensorPin);
+  if (sensorValue == LOW && !sensorTriggered) {
+    // Sensor has been triggered
+    sensorTriggered = true;
+    // Send a message to the Mega
+    Serial.println("SENSOR_TRIGGERED");
+  }
+  if (sensorValue == HIGH && sensorTriggered) {
+    // Sensor is no longer triggered
+    sensorTriggered = false;
+  }
+}
