@@ -1,0 +1,155 @@
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd3(0x26,20,4);  // set the LCD address to 0x26 for a 20 chars and 4 line display
+LiquidCrystal_I2C lcd2(0x27,20,4);  // set the LCD address to 0x26 for a 20 chars and 4 line display
+LiquidCrystal_I2C lcd1(0x25,20,4);  // set the LCD address to 0x26 for a 20 chars and 4 line display
+
+const int button01 = 36;
+const int button02 = 35;
+const int button03 = 34;
+const int button04 = 33;
+const int button05 = 32;
+const int button06 = 31;
+
+const int button07 = 30;
+const int button08 = 29;
+const int button09 = 28;
+const int button10 = 27;
+const int button11 = 26;
+const int button12 = 25;
+
+const int button13 = 24;
+const int button14 = 23;
+const int button15 = 22;
+
+
+void setup() {
+  lcd1.init();
+  lcd1.clear();         
+  lcd1.backlight();      // Make sure backlight is on
+  lcd2.init();
+  lcd2.clear();         
+  lcd2.backlight();      // Make sure backlight is on
+  lcd3.init();
+  lcd3.clear();         
+  lcd3.backlight();      // Make sure backlight is on
+  
+  lcd1.setCursor(0,0);   //Set cursor to character 0 on line 0
+  lcd1.print("Target 1");
+  
+  lcd1.setCursor(0,1);   //Move cursor to character 0 on line 1
+  lcd1.print("Target 2");
+  lcd1.setCursor(0,2);   //Move cursor to character 0 on line 2
+  lcd1.print("Target 3");
+
+  lcd2.setCursor(0,0);   //Set cursor to character 0 on line 0
+  lcd2.print("Target 4");
+  
+  lcd2.setCursor(0,1);   //Move cursor to character 0 on line 1
+  lcd2.print("Target 5");
+  lcd2.setCursor(0,2);   //Move cursor to character 0 on line 2
+  lcd2.print("Target 6");
+
+  pinMode(button01, INPUT);
+  pinMode(button02, INPUT);
+  pinMode(button03, INPUT);
+  pinMode(button04, INPUT);
+  pinMode(button05, INPUT);
+  pinMode(button06, INPUT);
+
+  pinMode(button07, INPUT);
+  pinMode(button08, INPUT);
+  pinMode(button09, INPUT);
+  pinMode(button10, INPUT);
+  pinMode(button11, INPUT);
+  pinMode(button12, INPUT);
+
+  pinMode(button13, INPUT);
+  pinMode(button14, INPUT);
+  pinMode(button15, INPUT);
+}
+
+void loop() {
+  
+  if (digitalRead(button01) == HIGH){
+    //lcd3.clear();
+    lcd3.setCursor(0,0);   //Set cursor to character 0 on line 0
+    lcd3.print("Button 01");
+  }
+  if (digitalRead(button02) == HIGH){
+    //lcd3.clear();
+    lcd3.setCursor(0,0);   //Set cursor to character 0 on line 0
+    lcd3.print("Button 02");
+  }
+  if (digitalRead(button03) == HIGH){
+    //lcd3.clear();
+    lcd3.setCursor(0,0);   //Set cursor to character 0 on line 0
+    lcd3.print("Button 03");
+  }
+  if (digitalRead(button04) == HIGH){
+    //lcd3.clear();
+    lcd3.setCursor(0,0);   //Set cursor to character 0 on line 0
+    lcd3.print("Button 04");
+  }
+  if (digitalRead(button05) == HIGH){
+    //lcd3.clear();
+    lcd3.setCursor(0,0);   //Set cursor to character 0 on line 0
+    lcd3.print("Button 05");
+  }
+  if (digitalRead(button06) == HIGH){
+    //lcd3.clear();
+    lcd3.setCursor(0,0);   //Set cursor to character 0 on line 0
+    lcd3.print("Button 06");
+  }
+
+  
+  if (digitalRead(button07) == HIGH){
+    //lcd3.clear();
+    lcd3.setCursor(0,0);   //Set cursor to character 0 on line 0
+    lcd3.print("Button 07");
+  }
+  if (digitalRead(button08) == HIGH){
+    //lcd3.clear();
+    lcd3.setCursor(0,0);   //Set cursor to character 0 on line 0
+    lcd3.print("Button 08");
+  }
+  if (digitalRead(button09) == HIGH){
+    //lcd3.clear();
+    lcd3.setCursor(0,0);   //Set cursor to character 0 on line 0
+    lcd3.print("Button 09");
+  }
+  if (digitalRead(button10) == HIGH){
+    lcd3.clear();
+    lcd3.setCursor(0,0);   //Set cursor to character 0 on line 0
+    lcd3.print("Button 10");
+  }
+  if (digitalRead(button11) == HIGH){
+    //lcd3.clear();
+    lcd3.setCursor(0,0);   //Set cursor to character 0 on line 0
+    lcd3.print("Button 11");
+  }
+  if (digitalRead(button12) == HIGH){
+    //lcd3.clear();
+    lcd3.setCursor(0,0);   //Set cursor to character 0 on line 0
+    lcd3.print("Button 12");
+  }
+
+
+  if (digitalRead(button13) == HIGH){
+    //lcd3.clear();
+    lcd3.setCursor(0,0);   //Set cursor to character 0 on line 0
+    lcd3.print("Button 13");
+  }
+  if (digitalRead(button14) == HIGH){
+    //lcd3.clear();
+    lcd3.setCursor(0,0);   //Set cursor to character 0 on line 0
+    lcd3.print("Button 14");
+  }
+  if (digitalRead(button15) == HIGH){
+    //lcd3.clear();
+    lcd3.setCursor(0,0);   //Set cursor to character 0 on line 0
+    lcd3.print("Button 15");
+  }
+
+}
+
