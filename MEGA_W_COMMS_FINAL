@@ -1,0 +1,470 @@
+/*
+Originally developed by Jackson McMillen and Garrett Cline
+For use by Newton's Attic
+
+Required Libraries to download:
+LiquidCrystal I2C library by Marco Schwartz
+
+*/
+
+#include <LiquidCrystal_I2C.h>
+
+// Initialize the LCD displays
+LiquidCrystal_I2C lcd1(0x25,20,4);  // LCD 1
+LiquidCrystal_I2C lcd2(0x27,20,4);  // LCD 2
+LiquidCrystal_I2C lcd3(0x26,20,4);  // LCD 3
+
+// Pin definitions
+const int resetTargetButton1 = 36;  //Button 1, 5-1
+const int resetTargetButton2 = 43;
+const int resetTargetButton3 = 44;
+const int resetTargetButton4 = 45;
+const int resetTargetButton5 = 46;
+const int resetTargetButton6 = 47;
+
+// Variables for debounced add points to team 1
+const int addPointsT1 = 30; // 7, 1-3
+int buttonStateAddPointsT1 = LOW;
+int lastButtonStateAddPointsT1 = LOW;
+unsigned long lastDebounceTimeAddPointsT1 = 0;
+const unsigned long debounceDelayAddPointsT1 = 50; // Adjust the delay as needed
+
+// Variables for debounced remove points from Team 1
+const int removePointsT1 = 27; // Pin connected to the remove points button for Team 1
+int buttonStateRemovePointsT1 = LOW;
+int lastButtonStateRemovePointsT1 = LOW;
+unsigned long lastDebounceTimeRemovePointsT1 = 0;
+const unsigned long debounceDelayRemovePointsT1 = 50; // Debounce delay in milliseconds
+
+// Variables for debounced add points to Team 2
+const int addPointsT2 = 29; // Pin connected to the add points button for Team 2
+int buttonStateAddPointsT2 = LOW;
+int lastButtonStateAddPointsT2 = LOW;
+unsigned long lastDebounceTimeAddPointsT2 = 0;
+const unsigned long debounceDelayAddPointsT2 = 50; // Debounce delay in milliseconds
+
+// Variables for debounced remove points from Team 2
+const int removePointsT2 = 26; // Pin connected to the remove points button for Team 2
+int buttonStateRemovePointsT2 = LOW;
+int lastButtonStateRemovePointsT2 = LOW;
+unsigned long lastDebounceTimeRemovePointsT2 = 0;
+const unsigned long debounceDelayRemovePointsT2 = 50; // Debounce delay in milliseconds
+
+const int resume = 23;  //  14, 1-2
+
+//Variables for debonuced add time
+const int incrTime5Button = 25; //12, 3-2
+int buttonStateIT5 = LOW;
+int lastButtonStateIT5 = LOW;
+unsigned long lastDebounceTimeIT5 = 0; // To track the time since the last button press
+unsigned long debounceDelayIT5 = 50;   // Debounce delay in milliseconds
+
+//Variables for debounced remove time
+const int decrTime5Button = 22; // 15, 3-1
+int buttonStateDT5 = LOW;
+int lastButtonStateDT5 = LOW;
+unsigned long lastDebounceTimeDT5 = 0; // To track the time since the last button press
+unsigned long debounceDelayDT5 = 50;   // Debounce delay in milliseconds
+
+const int instantRoundOver = 39;
+
+const int startStopButton = 24; //Button 13, 1 - 1
+
+//Variables used to contain time
+unsigned long currentTime = 0;  //Used for timing when pin is knocked down 
+unsigned long startTime = 0;
+unsigned long state3time = 0;
+unsigned long elapsedTime = 0;
+
+//Variables used to contain team scores
+int team1Score = 0;
+int team2Score = 0;
+
+bool paused = false;                        //Bool for if we are paused
+bool firstCheckDisplayState1 = true;        //Used for debugging     
+bool needToResetTime = false;               //Needed when a round ends by target elimination
+
+int currentState = 0;                       //Initial state for finite state machine
+
+bool pinState1 = true;                      //State of target 1
+
+void checkNanoMessages() {
+  // Check if data is available from the Nano
+  if (Serial1.available() > 0) {
+    // Read the incoming string until a newline character
+    String message = Serial1.readStringUntil('\n');
+    message.trim();  // Remove any whitespace
+
+    if (message.equals("DOWN")) {
+      Serial.println("Received DOWN from Nano");
+      pinState1 = false;
+    }
+    // Handle other messages if necessary
+  }
+}
+
+void increaseTimeBy5(int &countdown){
+  
+  int reading = digitalRead(incrTime5Button);
+  // If the button state has changed
+  if (reading != lastButtonStateIT5) {
+    lastDebounceTimeIT5 = millis();  // Reset the debounce timer
+  }
+  // Only trigger the action if the button has been in the same state for the debounce period
+  if ((millis() - lastDebounceTimeIT5) > debounceDelayIT5) {
+    // If the current reading is HIGH and it was previously LOW, the button was pressed
+    if (reading == HIGH && buttonStateIT5 == LOW) {
+      countdown = countdown + 5;
+      Serial.println("Added 5 seconds");
+    }
+    buttonStateIT5 = reading; // Update the current button state
+  }
+  lastButtonStateIT5 = reading;
+}
+
+void decreaseTimeBy5(int &countdown){
+    
+  int reading = digitalRead(decrTime5Button);
+  // If the button state has changed
+  if (reading != lastButtonStateDT5) {
+    lastDebounceTimeDT5 = millis();  // Reset the debounce timer
+  }
+  // Only trigger the action if the button has been in the same state for the debounce period
+  if ((millis() - lastDebounceTimeDT5) > debounceDelayDT5) {
+    // If the current reading is HIGH and it was previously LOW, the button was pressed
+    if (reading == HIGH && buttonStateDT5 == LOW) {
+      if (countdown > 6){
+        countdown = countdown - 5;
+        Serial.println("Removed 5 seconds");
+      }
+    }
+    buttonStateDT5 = reading; // Update the current button state
+  }
+  lastButtonStateDT5 = reading;
+}
+
+void increaseScoreT1(int &team1Score){
+  int reading = digitalRead(addPointsT1);
+  // If the button state has changed
+  if (reading != lastButtonStateAddPointsT1) {
+    lastDebounceTimeAddPointsT1 = millis();  // Reset the debounce timer
+  }
+  // Only trigger the action if the button has been in the same state for the debounce period
+  if ((millis() - lastDebounceTimeAddPointsT1) > debounceDelayAddPointsT1) {
+    // If the current reading is HIGH and it was previously LOW, the button was pressed
+    if (reading == HIGH && buttonStateAddPointsT1 == LOW) {
+      team1Score++;
+      lcd3.setCursor(0, 2);
+      lcd3.print("Team 1 score: ");
+      lcd3.print(team1Score);
+      Serial.println("Add 1 to team 1");
+    }
+    buttonStateAddPointsT1 = reading; // Update the current button state
+  }
+  lastButtonStateAddPointsT1 = reading;
+}
+
+void decreaseScoreT1(int &team1Score){
+  int reading = digitalRead(removePointsT1);
+  
+  // If the button state has changed
+  if (reading != lastButtonStateRemovePointsT1) {
+    lastDebounceTimeRemovePointsT1 = millis();  // Reset the debounce timer
+  }
+  
+  // Only trigger the action if the button has been in the same state for the debounce period
+  if ((millis() - lastDebounceTimeRemovePointsT1) > debounceDelayRemovePointsT1) {
+    // If the current reading is HIGH and it was previously LOW, the button was pressed
+    if (reading == HIGH && buttonStateRemovePointsT1 == LOW) {
+      if (team1Score > 0) { // Prevent negative scores
+        team1Score--;
+        lcd3.setCursor(0, 2);
+        lcd3.print("Team 1 score: ");
+        lcd3.print(team1Score);
+        Serial.println("Removed 1 from Team 1");
+      }
+    }
+    buttonStateRemovePointsT1 = reading; // Update the current button state
+  }
+  lastButtonStateRemovePointsT1 = reading;
+}
+
+void increaseScoreT2(int &team2Score){
+  int reading = digitalRead(addPointsT2);
+  
+  // If the button state has changed
+  if (reading != lastButtonStateAddPointsT2) {
+    lastDebounceTimeAddPointsT2 = millis();  // Reset the debounce timer
+  }
+  
+  // Only trigger the action if the button has been in the same state for the debounce period
+  if ((millis() - lastDebounceTimeAddPointsT2) > debounceDelayAddPointsT2) {
+    // If the current reading is HIGH and it was previously LOW, the button was pressed
+    if (reading == HIGH && buttonStateAddPointsT2 == LOW) {
+      team2Score++;
+      lcd3.setCursor(0, 3); // Adjust the cursor position as needed
+      lcd3.print("Team 2 score: ");
+      lcd3.print(team2Score);
+      Serial.println("Added 1 to Team 2");
+    }
+    buttonStateAddPointsT2 = reading; // Update the current button state
+  }
+  lastButtonStateAddPointsT2 = reading;
+}
+
+void decreaseScoreT2(int &team2Score){
+  int reading = digitalRead(removePointsT2);
+  
+  // If the button state has changed
+  if (reading != lastButtonStateRemovePointsT2) {
+    lastDebounceTimeRemovePointsT2 = millis();  // Reset the debounce timer
+  }
+  
+  // Only trigger the action if the button has been in the same state for the debounce period
+  if ((millis() - lastDebounceTimeRemovePointsT2) > debounceDelayRemovePointsT2) {
+    // If the current reading is HIGH and it was previously LOW, the button was pressed
+    if (reading == HIGH && buttonStateRemovePointsT2 == LOW) {
+      if (team2Score > 0) { // Prevent negative scores
+        team2Score--;
+        lcd3.setCursor(0, 3); // Adjust the cursor position as needed
+        lcd3.print("Team 2 score: ");
+        lcd3.print(team2Score);
+        Serial.println("Removed 1 from Team 2");
+      }
+    }
+    buttonStateRemovePointsT2 = reading; // Update the current button state
+  }
+  lastButtonStateRemovePointsT2 = reading;
+}
+
+
+void initialize_displays(){
+  lcd1.init();
+  lcd1.clear();         
+  lcd1.backlight();      // Make sure backlight is on
+  lcd2.init();
+  lcd2.clear();         
+  lcd2.backlight();      // Make sure backlight is on
+  lcd3.init();
+  lcd3.clear();         
+  lcd3.backlight();      // Make sure backlight is on
+}
+
+void reset_displays(){
+  lcd3.clear();
+  lcd1.clear();
+  lcd2.clear();
+  lcd1.setCursor(0,0);   //Set cursor to character 0 on line 0
+  lcd1.print("Team 1");
+  lcd1.setCursor(0,1);   //Set cursor to character 0 on line 0
+  lcd1.print("Target 1: UP");
+  lcd1.setCursor(0,2);   //Move cursor to character 0 on line 1
+  lcd1.print("Target 2: UP");
+  lcd1.setCursor(0,3);   //Move cursor to character 0 on line 2
+  lcd1.print("Target 3: UP");
+  lcd2.setCursor(0,0);   //Set cursor to character 0 on line 0
+  lcd2.print("Team 2");
+  lcd2.setCursor(0,1);   //Set cursor to character 0 on line 0
+  lcd2.print("Target 4: UP");
+  lcd2.setCursor(0,2);   //Move cursor to character 0 on line 1
+  lcd2.print("Target 5: UP");
+  lcd2.setCursor(0,3);   //Move cursor to character 0 on line 2
+  lcd2.print("Target 6: UP");
+}
+
+//Setup lcd boards and buttons and attach sensors to digital pins
+void setup() {
+  Serial.begin(9600);
+  Serial1.begin(9600); // Initialize Serial1 for communication with Nano
+
+  initialize_displays();
+
+  reset_displays();
+
+  Serial.println("Check 1");  //Debug check
+
+  // Remove sensorTarget pin modes and interrupts
+
+  pinMode(resetTargetButton1, INPUT);
+  pinMode(resetTargetButton2, INPUT);
+  pinMode(resetTargetButton3, INPUT);
+  pinMode(resetTargetButton4, INPUT);
+  pinMode(resetTargetButton5, INPUT);
+  pinMode(resetTargetButton6, INPUT);
+
+  pinMode(resume, INPUT);
+  pinMode(incrTime5Button, INPUT);
+  pinMode(decrTime5Button, INPUT);
+  pinMode(instantRoundOver, INPUT);
+
+  pinMode(startStopButton, INPUT);
+}
+
+void loop() {
+  checkNanoMessages(); // Check for messages from Nano
+
+  switch(currentState) {
+    case 0:                                         // Waiting for button input to begin the game
+      if (firstCheckDisplayState1){
+        Serial.println("In state 0");
+        firstCheckDisplayState1 = false;
+      }
+      lcd3.setCursor(0,0);
+      lcd3.print("Waiting to begin");
+      if (digitalRead(startStopButton) == HIGH) {   // If button is pressed begin round
+        Serial.println("Start button pressed");
+        Serial1.println("START");                   // Send START command to Nano
+        lcd3.clear();
+        lcd3.print("Beginning round!");
+        currentState = 1;  
+        currentTime = micros();
+        startTime = millis();
+        delay(1000);
+        lcd3.clear();
+        lcd3.print("Game on!");
+      }
+      break;
+      
+    case 1:  // State 1: Game in progress
+      static unsigned long previousMillis = 0;    //Used for second countdown
+      static int countdown = 11;
+      if(needToResetTime){
+        countdown = 11;
+        needToResetTime = false;
+      }
+      while (countdown > 0 && !paused) {
+        if(digitalRead(startStopButton)==HIGH){
+          Serial.println("Pause started");
+          Serial1.println("PAUSE");              // Send PAUSE command to Nano
+          lcd3.setCursor(0,2);
+          lcd3.print("Paused");
+          currentState = 2;
+          paused = true;
+        }
+
+        checkNanoMessages(); // Check for messages from Nano, inside while loop so need to call again
+        
+        //Increase time by 5 seconds formula
+        increaseTimeBy5(countdown);
+
+        //Decrease time by 5 seconds formula
+        decreaseTimeBy5(countdown);
+
+        if(pinState1 == false){
+          unsigned long pin1KnockedDownTime = micros();
+          unsigned long whenPin1KnockedDown = pin1KnockedDownTime - currentTime;
+          Serial.println(whenPin1KnockedDown);
+          lcd1.setCursor(0,1);
+          lcd1.print("Target 1: DOWN");
+          Serial.println("Target 1: DOWN");
+          
+          //team1Score++;
+        }
+        // Check for team wins
+        if(pinState1 == false /* && other conditions */){
+          currentState = 3;
+          state3time = millis();
+          countdown = 0;
+          needToResetTime = true;
+          Serial.println("Team 1 wins!");
+          lcd3.clear();
+          lcd3.print("Round over!");
+          lcd3.setCursor(0,1);
+          lcd3.print("Team 1 wins!!!");
+          team1Score++;
+          lcd3.setCursor(0,2);
+          lcd3.print(team1Score);
+          delay(5000);
+        }
+        //Display countdown and decrease it
+        unsigned long currentMillis = millis();
+        if (currentMillis - previousMillis >= 1000 && !paused) { // Check if 1 second has passed
+            previousMillis = currentMillis;
+            Serial.println(countdown-1);
+            lcd3.clear();
+            lcd3.setCursor(0,0);
+            lcd3.print("Game on!");
+            lcd3.setCursor(0,1);
+            lcd3.print(countdown - 1);
+            countdown--; // Decrement countdown
+        }
+      }
+      elapsedTime = millis() - startTime; 
+      if (elapsedTime >= 10000 && !paused) {                   // If 10 seconds have passed
+          Serial.println("Round over!!!");
+          lcd3.clear();
+          lcd3.print("Round over!");
+          currentState = 3;                         // Move to state 3
+          state3time = millis();                     // Record the start time for the next state
+          countdown = 11;
+      }
+      break;
+      
+    case 2:
+
+      //Increase time by 5 seconds formula
+      increaseTimeBy5(countdown);
+
+      //Decrease time by 5 seconds formula
+      decreaseTimeBy5(countdown);
+
+      if(digitalRead(resetTargetButton1)==HIGH){
+        Serial.println("Reseting in pause state");
+        Serial1.println("RESET_IN_PAUSE");                // Send RESET command to Nano
+        delay(5000);                             // Wait for Nano to reset
+      }
+      
+      if(digitalRead(resume)==HIGH){
+        paused = false;
+        Serial1.println("START");               // Send START command to Nano
+        currentState = 1;
+        //delay(1000);
+      }
+      break;
+
+    case 3: 
+      lcd3.setCursor(0,2);
+      lcd3.print("Resetting pins");
+      Serial1.println("RESET");                // Send RESET command to Nano
+      delay(5000);                             // Wait for Nano to reset
+      pinState1 = true;                        // reset pinstate1 to be true after reset
+
+      reset_displays();
+
+      Serial.println("Adjust scores phase");
+      lcd3.clear();
+      lcd3.setCursor(0,0);
+      lcd3.print("Adjust Scores");
+      lcd3.setCursor(0,1);
+      lcd3.print("Press resume to cont.");
+      lcd3.setCursor(0,2);
+      lcd3.print("Team 1 score: ");
+      lcd3.print(team1Score);
+      lcd3.setCursor(0,3);
+      lcd3.print("Team 2 score: ");
+      lcd3.print(team2Score);
+
+      currentState = 4;
+      break;
+
+    case 4:
+
+      int addPointsT1ButtonState = digitalRead(addPointsT1);
+      
+      if(digitalRead(resume)==HIGH){
+        Serial.println("Moving into waiting state");
+        lcd3.clear();
+        currentState = 0;
+        delay(1000);
+      }
+
+      increaseScoreT1(team1Score);
+      decreaseScoreT1(team1Score);
+      increaseScoreT2(team2Score);
+      decreaseScoreT2(team2Score);
+
+      //Code to adjust score, buttons for + and - for each team      
+      break;
+
+  }
+}
